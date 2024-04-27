@@ -15,6 +15,7 @@ add_executable(my_blink
   filesystem.c
   custom_fgets.c
   cli.c
+  tests.c
 )
 
 pico_enable_stdio_usb(my_blink 1)

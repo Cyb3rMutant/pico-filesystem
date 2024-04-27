@@ -1,29 +1,9 @@
-// #include <stdio.h>
-// #include "pico/stdlib.h"
-// #include "hardware/gpio.h"
-// #include "flash_ops.h"
-// #include "filesystem.h"
-// const uint LED_PIN = 25;
-
-// int main() {
-//     stdio_init_all();
-//     gpio_init(LED_PIN);
-//     gpio_set_dir(LED_PIN, GPIO_OUT);
-//     while (1) {
-//         gpio_put(LED_PIN, 0);
-//         sleep_ms(250);
-//         gpio_put(LED_PIN, 1);
-//         printf("Hello World\n");
-//         sleep_ms(1000);
-//     }
-// }
-// #include "cli.h"
-// #include "custom_fgets.h"
 #include "cli.h"
 #include "custom_fgets.h"
 #include "filesystem.h"
 #include "flash_ops.h"
 #include "pico/stdlib.h"
+#include "tests.h"
 #include <stdio.h>
 
 int main() {
@@ -37,28 +17,47 @@ int main() {
     init_filesystem();
 
     // Command loop
-    while (1) {
-        printf("\nEnter command: ");
-        custom_fgets(command, sizeof(command), stdin);
-        execute_command(command);
-    }
-    // fs_ls();
-    // FS_FILE *fd = fs_open("3.txt", MODE_READ | MODE_WRITE);
-    // char w_buf[4096] = "Hello World\0";
-    // fs_write(fd, w_buf, 12);
-    // fs_ls();
-    //
-    // // printf("%d\n", fs_write(fd_4, buffer, 20));
-    // // printf("%d\n", fs_write(fd_2, "how are you", 11));
-    // // printf("%d\n", fs_write(fd, "i am ggoodd", 11));
-    // // fs_read(fd_1, buffer, 11);
-    // // printf("Buffer: %s\n", buffer);
-    // char r_buf[4096];
-    // fs_read(fd, r_buf, 12);
-    // printf("Buffer: %s\n", r_buf);
-    // // fs_read(fd, buffer, 11);
-    // // printf("Buffer: %s\n", buffer);
-    // fs_ls();
-    //
+    // while (1) {
+    //     printf("\nEnter command: ");
+    //     custom_fgets(command, sizeof(command), stdin);
+    //     execute_command(command);
+    // }
+    test1();
+    test2();
+    test3();
+    test4();
+    test5();
+    test6();
+    test7();
+    test8();
+    test9();
+    test10();
+    test11();
+    test12();
+    test13();
+    test14();
+    test15();
+    test16();
+    test17();
+    test18();
+    test19();
+    test20();
+    test21();
+    test22();
+    test23();
+    test24();
+    test25();
+    test26();
+    test27();
+    test28();
+    test29();
+    test30();
+    test31();
+    test32();
+    test33();
+    test34();
+    test35();
+    test36();
+    test37();
     return 0;
 }

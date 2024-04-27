@@ -25,31 +25,36 @@ enum errors {
     OVERFLOW = -8,
 };
 
-// File entry structure
+// Structure to hold metadata for a file
 typedef struct {
-    char filename[25]; // Path of the file
-    uint32_t size;     // Size of the file
-    bool in_use;       // Indicates if this file entry is in use
+    char filename[25]; // Filename of the file
+    uint32_t size;     // Size of the file in bytes
+    bool in_use;       // Flag indicating if the file entry is in use
 } FileEntry;
 
-// File handle structure
+// Structure representing a file handle
 typedef struct {
-    FileEntry *entry;  // Pointer to the file entry in the file system
+    FileEntry *entry;  // Pointer to the file's metadata
     uint32_t position; // Current position in the file
-    int m;
+    int m;             // Mode of file operation
 } FS_FILE;
 
+// Function to check if a specific mode flag is set
 int check_mode(int mode, int flag);
 
+// Function to initialize the filesystem
 void init_filesystem();
+
+// File I/O functions
 int fs_open(const char *path, int m);
 void fs_close(int fd);
 int fs_read(int fd, char *buffer, int size);
 int fs_write(int fd, const char *buffer, int size);
 int fs_seek(int fd, long offset, int whence);
 
+// File manipulation functions
 int fs_create(const char *path);
-void fs_ls();
+int fs_ls();
 int fs_format(const char *path);
 void fs_wipe();
 int fs_mv(const char *old_path, const char *new_path);

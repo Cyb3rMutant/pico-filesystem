@@ -2,6 +2,7 @@
 #define CLI_H
 
 void execute_command(char *command);
+
 void handle_open_command(char *token);
 void handle_close_command(char *token);
 void handle_read_command(char *token);
