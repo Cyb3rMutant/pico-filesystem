@@ -73,6 +73,9 @@ void update_file_table() {
 void init_filesystem() {
     // Initialize the file table
     flash_read_safe(0, &file_table, sizeof(FileEntry) * 25);
+    for (int i = 1; i < 25; i++) {
+        file_table[i].in_use = 0;
+    }
 
     if (strcmp(file_table[0].filename, "magic string for initing\0") == 0) {
         return;
@@ -190,7 +193,7 @@ int fs_read(int fd, char *buffer, int size) {
     // Read data from flash memory into buffer
     clear_buffer();
     flash_read_safe(get_file(open_files[fd].entry->filename), temp_buffer,
-                    size);
+                    open_files[fd].entry->size);
     memcpy(buffer, temp_buffer + open_files[fd].position, size);
     open_files[fd].position += size;
     return size;
@@ -304,7 +307,7 @@ int fs_seek(int fd, long offset, int whence) {
         open_files[fd].position += offset;
         break;
     case SEEK_END:
-        open_files[fd].position = open_files[fd].entry->size;
+        open_files[fd].position = open_files[fd].entry->size - offset;
         break;
     }
 
@@ -464,6 +467,7 @@ int fs_cp(const char *source_path, const char *dest_path) {
 
     // Copy the size and content of the source file to the destination file
     file_table[dest].size = file_table[source].size;
+    file_table[dest].in_use = file_table[source].in_use;
     update_file_table();
     clear_buffer();
     flash_read_safe(source, temp_buffer, file_table[source].size);
