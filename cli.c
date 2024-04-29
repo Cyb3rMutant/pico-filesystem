@@ -2,6 +2,7 @@
 #include "custom_fgets.h"
 #include "filesystem.h"
 #include "flash_ops.h"
+#include "tests.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -32,67 +33,75 @@
  *  another.
  *  12. cp: <source_filename> <destination_filename> - Copies a file from one
  *  location to another.
+ *  13. exit: - exits
+ *  14. test: - runs the unit tests
  *
  * @param command The command string to execute.
  */
-void execute_command(char *command) {
+int execute_command(char *command) {
     // Tokenize the command string to extract the command keyword
     char *token = strtok(command, " ");
 
     // Check if the command string is empty
     if (token == NULL) {
         printf("\nInvalid command\n");
-        return;
+        return 0;
     }
 
     // Compare the command keyword with known command strings and call the
     // corresponding handler function
     if (strcmp(token, "open") == 0) { // open: <filename> <mode>
-        handle_open_command(token);
+        handle_open_command();
     } else if (strcmp(token, "close") == 0) { // close: <fd>
-        handle_close_command(token);
+        handle_close_command();
     } else if (strcmp(token, "read") == 0) { // read: <fd> <size>
-        handle_read_command(token);
+        handle_read_command();
     } else if (strcmp(token, "write") == 0) { // write: <fd> <string>
-        handle_write_command(token);
+        handle_write_command();
     } else if (strcmp(token, "seek") == 0) { // seek: <fd> <offset> <whence>
-        handle_seek_command(token);
+        handle_seek_command();
     } else if (strcmp(token, "ls") == 0) { // ls
         handle_ls_command();
     } else if (strcmp(token, "wipe") == 0) { // wipe
         handle_wipe_command();
     } else if (strcmp(token, "create") == 0) { // create: <filename>
-        handle_create_command(token);
+        handle_create_command();
     } else if (strcmp(token, "rm") == 0) { // rm: <filename>
-        handle_rm_command(token);
+        handle_rm_command();
     } else if (strcmp(token, "format") == 0) { // format: <filename>
-        handle_format_command(token);
+        handle_format_command();
     } else if (strcmp(token, "mv") == 0) { // mv: <old_filename> <new_filename>
-        handle_mv_command(token);
+        handle_mv_command();
     } else if (strcmp(token, "cp") ==
                0) { // cp: <source_filename> <destination_filename>
-        handle_cp_command(token);
+        handle_cp_command();
+    } else if (strcmp(token, "test") == 0) { // test
+        run_tests();
+    } else if (strcmp(token, "exit") == 0) { // exit
+        return 1;
     } else {
         // If the command is not recognized, handle it as an unknown command
         handle_unknown_command();
     }
+    return 0;
 }
 
 /**
- * @brief Handles the 'open' command to open a file with the specified name and
- * mode.
+ * @brief Handles the 'open' command to open a file with the specified name
+ * and mode.
  *
- * This function parses the 'open' command and attempts to open a file with the
- * specified name and mode. It extracts the filename and mode from the command
- * string and calls the fs_open function to open the file. After attempting to
- * open the file, it prints appropriate messages based on the result.
+ * This function parses the 'open' command and attempts to open a file with
+ * the specified name and mode. It extracts the filename and mode from the
+ * command string and calls the fs_open function to open the file. After
+ * attempting to open the file, it prints appropriate messages based on the
+ * result.
  *
  * @param token The tokenized command string containing the 'open' command
  * keyword.
  */
-void handle_open_command(char *token) {
+void handle_open_command() {
     // Extract the filename and mode from the command string
-    token = strtok(NULL, " ");
+    char *token = strtok(NULL, " ");
     printf("token: %s\n", token);
     if (token == NULL) {
         printf("\nOpen needs a name\n");
@@ -114,8 +123,8 @@ void handle_open_command(char *token) {
         token[strlen(token) - 1] = '\0';
         m = MODE_CREATE;
     }
-    // Check if the mode contains the 'r', 'w', or 'a' characters to indicate
-    // read,
+    // Check if the mode contains the 'r', 'w', or 'a' characters to
+    // indicate read,
     if (strcmp(token, "r") == 0) {
         m |= MODE_READ;
     } else if (strcmp(token, "w") == 0) {
@@ -134,7 +143,8 @@ void handle_open_command(char *token) {
     // Attempt to open the file with the specified name and mode
     int fd = fs_open(name, m);
 
-    // Print appropriate messages based on the result of the fs_open function
+    // Print appropriate messages based on the result of the fs_open
+    // function
     if (fd == FILE_NOT_FOUND) {
         if (check_mode(m, MODE_CREATE)) {
             printf("\nFile not found and memory full\n");
@@ -152,20 +162,20 @@ void handle_open_command(char *token) {
     }
 }
 /**
- * @brief Handles the 'close' command to close a file with the specified file
- * descriptor.
+ * @brief Handles the 'close' command to close a file with the specified
+ * file descriptor.
  *
  * This function parses the 'close' command and attempts to close the file
  * associated with the specified file descriptor. It extracts the file
- * descriptor from the command string and calls the fs_close function to close
- * the file.
+ * descriptor from the command string and calls the fs_close function to
+ * close the file.
  *
  * @param token The tokenized command string containing the 'close' command
  * keyword.
  */
-void handle_close_command(char *token) {
+void handle_close_command() {
     // Extract the file descriptor from the command string
-    token = strtok(NULL, " ");
+    char *token = strtok(NULL, " ");
     if (token == NULL) {
         printf("\nClose needs a file descriptor\n");
         return;
@@ -175,20 +185,21 @@ void handle_close_command(char *token) {
 }
 
 /**
- * @brief Handles the 'read' command to read data from a file with the specified
- * file descriptor.
+ * @brief Handles the 'read' command to read data from a file with the
+ * specified file descriptor.
  *
- * This function parses the 'read' command and attempts to read data from the
- * file associated with the specified file descriptor. It extracts the file
- * descriptor and the size of data to read from the command string, reads the
- * data from the file, and prints the read data or appropriate error messages.
+ * This function parses the 'read' command and attempts to read data from
+ * the file associated with the specified file descriptor. It extracts the
+ * file descriptor and the size of data to read from the command string,
+ * reads the data from the file, and prints the read data or appropriate
+ * error messages.
  *
  * @param token The tokenized command string containing the 'read' command
  * keyword.
  */
-void handle_read_command(char *token) {
+void handle_read_command() {
     // Extract the file descriptor and size from the command string
-    token = strtok(NULL, " ");
+    char *token = strtok(NULL, " ");
     if (token == NULL) {
         printf("\nRead needs a file descriptor\n");
         return;
@@ -203,7 +214,8 @@ void handle_read_command(char *token) {
     int size = atoi(token);
     char buffer[size];
     int read = fs_read(fd, buffer, size);
-    // Print appropriate messages based on the result of the fs_read function
+    // Print appropriate messages based on the result of the fs_read
+    // function
     if (read == FILE_NOT_OPEN) {
         printf("\nIncorrect file descriptor\n");
     } else if (read == INCORRECT_MODE) {
@@ -214,21 +226,21 @@ void handle_read_command(char *token) {
 }
 
 /**
- * @brief Handles the 'write' command to write data to a file with the specified
- * file descriptor.
+ * @brief Handles the 'write' command to write data to a file with the
+ * specified file descriptor.
  *
- * This function parses the 'write' command and attempts to write data to the
- * file associated with the specified file descriptor. It extracts the file
- * descriptor and the string to write from the command string, writes the data
- * to the file, and prints the number of bytes written or appropriate error
- * messages.
+ * This function parses the 'write' command and attempts to write data to
+ * the file associated with the specified file descriptor. It extracts the
+ * file descriptor and the string to write from the command string, writes
+ * the data to the file, and prints the number of bytes written or
+ * appropriate error messages.
  *
  * @param token The tokenized command string containing the 'write' command
  * keyword.
  */
-void handle_write_command(char *token) {
+void handle_write_command() {
     // Extract the file descriptor from the command string
-    token = strtok(NULL, " ");
+    char *token = strtok(NULL, " ");
     if (token == NULL) {
         printf("\nWrite needs a file descriptor\n");
         return;
@@ -242,7 +254,8 @@ void handle_write_command(char *token) {
     }
     int size = strlen(token);
     int written = fs_write(fd, token, size);
-    // Print appropriate messages based on the result of the fs_write function
+    // Print appropriate messages based on the result of the fs_write
+    // function
     if (written == FILE_NOT_OPEN) {
         printf("\nIncorrect file descriptor\n");
     } else if (written == INCORRECT_MODE) {
@@ -258,18 +271,19 @@ void handle_write_command(char *token) {
  * @brief Handles the 'seek' command to move the file pointer to a specified
  * position in the file.
  *
- * This function parses the 'seek' command and attempts to move the file pointer
- * of the file associated with the specified file descriptor. It extracts the
- * file descriptor, offset, and whence parameter from the command string, and
- * calls the fs_seek function to perform the seek operation. It prints
- * appropriate messages based on the result of the seek operation.
+ * This function parses the 'seek' command and attempts to move the file
+ * pointer of the file associated with the specified file descriptor. It
+ * extracts the file descriptor, offset, and whence parameter from the
+ * command string, and calls the fs_seek function to perform the seek
+ * operation. It prints appropriate messages based on the result of the seek
+ * operation.
  *
  * @param token The tokenized command string containing the 'seek' command
  * keyword.
  */
-void handle_seek_command(char *token) {
+void handle_seek_command() {
     // Extract the file descriptor from the command string
-    token = strtok(NULL, " ");
+    char *token = strtok(NULL, " ");
     if (token == NULL) {
         printf("\nSeek needs a file descriptor\n");
         return;
@@ -301,7 +315,8 @@ void handle_seek_command(char *token) {
         return;
     }
     int seek = fs_seek(fd, offset, whence);
-    // Print appropriate messages based on the result of the fs_seek function
+    // Print appropriate messages based on the result of the fs_seek
+    // function
     if (seek == FILE_NOT_OPEN) {
         printf("\nIncorrect file descriptor\n");
     } else {
@@ -312,7 +327,8 @@ void handle_seek_command(char *token) {
 /**
  * @brief Handles the 'ls' command to list all files in the filesystem.
  *
- * This function calls the fs_ls function to list all files in the filesystem.
+ * This function calls the fs_ls function to list all files in the
+ * filesystem.
  */
 void handle_ls_command() { printf("\nThe system has %d files\n", fs_ls()); }
 
@@ -325,26 +341,27 @@ void handle_ls_command() { printf("\nThe system has %d files\n", fs_ls()); }
 void handle_wipe_command() { fs_wipe(); }
 
 /**
- * @brief Handles the 'create' command to create a new file with the specified
- * name.
+ * @brief Handles the 'create' command to create a new file with the
+ * specified name.
  *
- * This function parses the 'create' command and attempts to create a new file
- * with the specified name. It extracts the filename from the command string and
- * calls the fs_create function to create the file. It prints appropriate
- * messages based on the result of the create operation.
+ * This function parses the 'create' command and attempts to create a new
+ * file with the specified name. It extracts the filename from the command
+ * string and calls the fs_create function to create the file. It prints
+ * appropriate messages based on the result of the create operation.
  *
  * @param token The tokenized command string containing the 'create' command
  * keyword.
  */
-void handle_create_command(char *token) {
+void handle_create_command() {
     // Extract the filename from the command string
-    token = strtok(NULL, " ");
+    char *token = strtok(NULL, " ");
     if (token == NULL) {
         printf("\nCreate needs a name\n");
         return;
     }
     int create = fs_create(token);
-    // Print appropriate messages based on the result of the fs_create function
+    // Print appropriate messages based on the result of the fs_create
+    // function
     if (create == FILE_ALREADY_EXISTS) {
         printf("\nFile already exists\n");
     } else if (create == FILE_TABLE_FULL) {
@@ -355,17 +372,17 @@ void handle_create_command(char *token) {
 /**
  * @brief Handles the 'rm' command to remove a file with the specified name.
  *
- * This function parses the 'rm' command and attempts to remove the file with
- * the specified name. It extracts the filename from the command string and
- * calls the fs_rm function to remove the file. It prints appropriate messages
- * based on the result of the remove operation.
+ * This function parses the 'rm' command and attempts to remove the file
+ * with the specified name. It extracts the filename from the command string
+ * and calls the fs_rm function to remove the file. It prints appropriate
+ * messages based on the result of the remove operation.
  *
  * @param token The tokenized command string containing the 'rm' command
  * keyword.
  */
-void handle_rm_command(char *token) {
+void handle_rm_command() {
     // Extract the filename from the command string
-    token = strtok(NULL, " ");
+    char *token = strtok(NULL, " ");
     if (token == NULL) {
         printf("\nRemove needs a name\n");
         return;
@@ -380,41 +397,43 @@ void handle_rm_command(char *token) {
  * @brief Handles the 'format' command to format a file.
  *
  * This function parses the 'format' command and attempts to format the file
- * with the specified name. It extracts the filename from the command string and
- * calls the fs_format function to format the file. It prints appropriate
- * messages based on the result of the format operation.
+ * with the specified name. It extracts the filename from the command string
+ * and calls the fs_format function to format the file. It prints
+ * appropriate messages based on the result of the format operation.
  *
  * @param token The tokenized command string containing the 'format' command
  * keyword.
  */
-void handle_format_command(char *token) {
+void handle_format_command() {
     // Extract the filename from the command string
-    token = strtok(NULL, " ");
+    char *token = strtok(NULL, " ");
     if (token == NULL) {
         printf("\nFormat needs a name\n");
         return;
     }
-    // Call the fs_format function to format the file with the specified name
+    // Call the fs_format function to format the file with the specified
+    // name
     if (fs_format(token) == FILE_NOT_FOUND) {
         printf("\nFile not found\n");
     }
 }
 
 /**
- * @brief Handles the 'mv' command to move a file from one location to another.
+ * @brief Handles the 'mv' command to move a file from one location to
+ * another.
  *
- * This function parses the 'mv' command and attempts to move a file from one
- * location to another. It extracts the source and destination filenames from
- * the command string and calls the fs_mv function to perform the move
+ * This function parses the 'mv' command and attempts to move a file from
+ * one location to another. It extracts the source and destination filenames
+ * from the command string and calls the fs_mv function to perform the move
  * operation. It prints appropriate messages based on the result of the move
  * operation.
  *
  * @param token The tokenized command string containing the 'mv' command
  * keyword.
  */
-void handle_mv_command(char *token) {
+void handle_mv_command() {
     // Extract the source and destination filenames from the command string
-    token = strtok(NULL, " ");
+    char *token = strtok(NULL, " ");
     if (token == NULL) {
         printf("\nMove needs 2 names\n");
         return;
@@ -432,20 +451,21 @@ void handle_mv_command(char *token) {
 }
 
 /**
- * @brief Handles the 'cp' command to copy a file from one location to another.
+ * @brief Handles the 'cp' command to copy a file from one location to
+ * another.
  *
- * This function parses the 'cp' command and attempts to copy a file from one
- * location to another. It extracts the source and destination filenames from
- * the command string and calls the fs_cp function to perform the copy
+ * This function parses the 'cp' command and attempts to copy a file from
+ * one location to another. It extracts the source and destination filenames
+ * from the command string and calls the fs_cp function to perform the copy
  * operation. It prints appropriate messages based on the result of the copy
  * operation.
  *
  * @param token The tokenized command string containing the 'cp' command
  * keyword.
  */
-void handle_cp_command(char *token) {
+void handle_cp_command() {
     // Extract the source and destination filenames from the command string
-    token = strtok(NULL, " ");
+    char *token = strtok(NULL, " ");
     if (token == NULL) {
         printf("\nCopy needs 2 names\n");
         return;

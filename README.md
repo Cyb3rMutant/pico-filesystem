@@ -118,71 +118,113 @@ The list operation is straightforward: if the file exists, it prints its metadat
 
 ## Open
 
-Open retrieves the file from the FAT table then assigns it a file descriptor based on the first free index in the `opened_files` array and returns that fd. All further interactions with that opened file will be through that fd.
+The open function retrieves the file from the FAT table and assigns it a file descriptor based on the first available index in the `opened_files` array. Subsequent interactions with the opened file occur through this file descriptor.
 
 ## Close
 
-Similar to Remove, closing a file is done by null-ing the entry in the opened files array at that fd index
+Similar to removal, closing a file involves nullifying the entry in the `opened_files` array at the corresponding file descriptor index.
 
 ## Read
 
-This is where the `position` field starts to be used. read acts as a buffer, so everytime the user reads however many bytes, the position will move by that much forward, and the next read/write will occure from that point.
-
-so if we have the string `"Hello world!"` stored in a file and read 6 bytes twice like this:
+The read operation utilizes the `position` field. Each read operation acts as a buffer, incrementing the position by the number of bytes read. Subsequent reads or writes occur from this updated position. For instance:
 
 ```c
 fs_read(1, buf, 6);
 fs_read(1, buf, 6);
 ```
 
-we will get this:
+Would yield:
 
 ```
 "hello " // first read
 "world!" // second read
 ```
 
-The way this works is that theres a pre allocated temp buffer used to read everything written into the file, then filtering that out using the `position` field into the buffer provided through the function call. The reason this is done is that the methods provided for reading and writing to memory dont offer an offset within the sector itself
+Internally, a pre-allocated temporary buffer is used to read file content, which is then filtered based on the `position` field into the buffer provided by the function call. This approach is necessary because the memory reading and writing methods available do not support offset within the sector itself.
 
 ## Write
 
-Write has 2 modes, depending on which the file has been opened with:
+The write operation has two modes, depending on how the file was opened:
 
-### normal writing
+### Normal Writing
 
-this one acts in the same way read does with the position, so it reads the file, copies the provided buffer into the temp buffer then writes it back to the flash, moving the position forward.
+In this mode, similar to reading, the position determines the write location. The provided buffer is copied into a temporary buffer, then written back to the flash memory, advancing the position accordingly. For example, if `"Hello world!"` is written to a file with a position of 3 and then `"hello"` is written again, the content becomes `"Helhellorld!"` and the position becomes 8.
 
-For example if we had a file that had `"Hello world!"` written to it and the position was 3 and we wrote hello again to it the content will become `"Helhellorld!"` and position will become 8
+### Append
 
-### append
-
-append stores the current position, then sets the position to the end of the file, and writes the content there, then retains the old position
-
-So if we had the same file with `"Hello world!"` at position 3, and appended `"hello"` to it, it will become `"Hello world!hello` and position remains 3
+In append mode, the current position is stored, the position is set to the end of the file, and the content is written there. The old position is then restored. For instance, appending `"hello"` to a file with content `"Hello world!"` at position 3 results in `"Hello world!hello"`, with the position remaining at 3.
 
 ## Seek
 
-Seek is used to manipulate the position, it has 3 modes:
+The seek operation manipulates the position and supports three modes:
 
-- **SET**: it sets the position to whatever offset given from the start of the file moving forward, example:
+- **SET**: Sets the position to the specified offset from the start of the file, moving forward.
 
   ```c
-  // cur pos is 5, and size is 10
+  // current position is 5, and size is 10
   fs_seek(1, 3, SEEK_SET);
-  // cur pos is 3
+  // current position is 3
   ```
 
-- **CUR**: it sets the position to whatever offset given from the current position moving forward
+- **CUR**: Sets the position to the specified offset from the current position, moving forward.
 
   ```c
-  // cur pos is 5, and size is 10
+  // current position is 5, and size is 10
   fs_seek(1, 3, SEEK_CUR);
-  // cur pos is 8
+  // current position is 8
   ```
 
-- **END**: it sets the position to whatever offset given from the end of the file backwards
+- **END**: Sets the position to the specified offset from the end of the file, moving backward.
+
   ```c
-  // cur pos is 5, and size is 10
+  // current position is 5, and size is 10
   fs_seek(1, 3, SEEK_END);
-  // cur pos is 7
+  // current position is 7
   ```
+
+# Memory Management
+
+Upon initialization, all file metadata is loaded into memory for quicker access. Furthermore, these files are statically allocated, eliminating the need for dynamic memory allocation and deallocation upon create, remove, move, and copy operations. Instead, these operations simply involve setting the related name to null or vice versa.
+
+In addition to the FAT table, there is a table to store opened files, also statically allocated. This allows for efficient reuse of indices when opening and closing files, optimizing memory usage.
+
+Since all files are loaded into memory, users interact with file descriptors rather than pointers, preventing access to raw file metadata unnecessarily. Moreover, indexing into a list of files is achieved in constant time (`O(1)`), which is more efficient than looping to find file metadata from entries.
+
+On the other hand, file entries are stored as pointers rather than indices. This design choice ensures that file entries remain intact even after operations like move, preserving their integrity.
+
+# CLI
+
+The app provides a command line interface to interact with the system, offering all commands, bellow is the set of commands:
+
+| Command | Arguments                                    |
+| ------- | -------------------------------------------- |
+| open    | \<filename\> \<mode\>                        |
+| close   | \<fd\>                                       |
+| read    | \<fd\> \<size\>                              |
+| write   | \<fd\> \<string\>                            |
+| seek    | \<fd\> \<offset\> \<whence\>                 |
+| ls      | -                                            |
+| wipe    | -                                            |
+| create  | \<filename\>                                 |
+| rm      | \<filename\>                                 |
+| format  | \<filename\>                                 |
+| mv      | \<old_filename\> \<new_filename\>            |
+| cp      | \<source_filename\> \<destination_filename\> |
+| test    | -                                            |
+| exit    | -                                            |
+
+## Tests
+
+A dedicated set of unit tests has been written to ensure the functionality of the commands. You can run these tests using the following methods:
+
+1. **CLI Command:** Execute the test command through the CLI.
+
+   ```bash
+   Enter command: test
+   ```
+
+2. **Function Call:** Alternatively, you can directly call the `run_tests()` function.
+
+   ```c
+   run_tests()
+   ```

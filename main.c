@@ -3,7 +3,6 @@
 #include "filesystem.h"
 #include "flash_ops.h"
 #include "pico/stdlib.h"
-#include "tests.h"
 #include <stdio.h>
 
 int main() {
@@ -17,11 +16,11 @@ int main() {
     init_filesystem();
 
     // Command loop
-    // while (1) {
-    //     printf("\nEnter command: ");
-    //     custom_fgets(command, sizeof(command), stdin);
-    //     execute_command(command);
-    // }
-    run_tests();
+    while (1) {
+        printf("\nEnter command: ");
+        custom_fgets(command, sizeof(command), stdin);
+        if (execute_command(command))
+            break;
+    }
     return 0;
 }

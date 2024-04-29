@@ -431,6 +431,7 @@ int fs_mv(const char *old_path, const char *new_path) {
         // Copy the file from the old path to the new path and then remove the
         // file at the old path
         fs_cp(old_path, new_path);
+        file_table[old_file].in_use = file_table[new_file].in_use;
         if (strcmp(old_path, new_path) != 0) {
             fs_rm(old_path);
         }
@@ -467,7 +468,6 @@ int fs_cp(const char *source_path, const char *dest_path) {
 
     // Copy the size and content of the source file to the destination file
     file_table[dest].size = file_table[source].size;
-    file_table[dest].in_use = file_table[source].in_use;
     update_file_table();
     clear_buffer();
     flash_read_safe(source, temp_buffer, file_table[source].size);

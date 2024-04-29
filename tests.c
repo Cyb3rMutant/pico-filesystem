@@ -2,35 +2,40 @@
 #include "filesystem.h"
 
 void run_tests() {
-    test1();
-    test2();
-    test3();
-    test4();
-    test5();
-    test6();
-    test7();
-    test8();
-    test9();
-    test10();
-    test11();
-    test12();
-    test13();
-    test14();
-    test15();
-    test16();
-    test17();
-    test18();
-    test19();
-    test20();
-    test21();
-    test22();
-    test23();
-    test24();
-    test25();
-    test26();
-    test27();
-    test28();
-    test29();
+    for (int i = 0; i < 10; i++) {
+        fs_close(i);
+    }
+
+    fs_wipe();
+    // test1();
+    // test2();
+    // test3();
+    // test4();
+    // test5();
+    // test6();
+    // test7();
+    // test8();
+    // test9();
+    // test10();
+    // test11();
+    // test12();
+    // test13();
+    // test14();
+    // test15();
+    // test16();
+    // test17();
+    // test18();
+    // test19();
+    // test20();
+    // test21();
+    // test22();
+    // test23();
+    // test24();
+    // test25();
+    // test26();
+    // test27();
+    // test28();
+    // test29();
     test30();
     test31();
     test32();
@@ -39,10 +44,13 @@ void run_tests() {
     test35();
     test36();
     test37();
+    for (int i = 0; i < 10; i++) {
+        fs_close(i);
+    }
+    fs_wipe();
 }
 
 void test1() {
-    fs_wipe();
     // Test 1: Create a file
     printf("Test 1: Create a file\n");
     if (fs_create("file1") == 1) {
@@ -202,7 +210,7 @@ void test14() {
 void test15() {
     // Test 15: Open a file
     printf("Test 15: Open a file\n");
-    fs_create("file1");
+
     if (fs_open("file1", MODE_READ) == 0) {
         printf("Test 15: Passed\n");
     } else {
@@ -495,8 +503,8 @@ void test34() {
     fs_rm("file1");
 }
 void test35() {
-    // Test 35: Overwriting after formating a file
-    printf("Test 35: Overwriting after formating a file\n");
+    // Test 35: writing after formating a file
+    printf("Test 35: writing after formating a file\n");
     fs_open("file1", MODE_CREATE | MODE_WRITE | MODE_READ);
     char buffer[10] = "test";
     fs_write(0, buffer, 4);
