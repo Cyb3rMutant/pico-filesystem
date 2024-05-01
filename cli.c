@@ -102,7 +102,6 @@ int execute_command(char *command) {
 void handle_open_command() {
     // Extract the filename and mode from the command string
     char *token = strtok(NULL, " ");
-    printf("token: %s\n", token);
     if (token == NULL) {
         printf("\nOpen needs a name\n");
         return;
@@ -111,7 +110,6 @@ void handle_open_command() {
 
     // Extract the mode from the command string
     token = strtok(NULL, " ");
-    printf("token: %s\n", token);
     if (token == NULL) {
         printf("\nOpen needs a mode\n");
         return;
